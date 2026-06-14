@@ -569,7 +569,18 @@ class PreparedRequest(RequestEncodingMixin, RequestHooksMixin):
                 # Raise exception on invalid header value.
                 check_header_validity(header)
                 name, value = header
-                self.headers[to_native_string(name)] = value
+                # The name is coerced to the native str type so the CaseInsensitiveDict
+                # can key off a str (the dict is typed as `dict[str, _VT]`). Previously
+                # the value was stored as-is, so a user passing bytes (e.g.
+                # `headers={'Cookie': b'sessionid=abc'}`) ended up with a bytes value
+                # inside self.headers. Downstream code like cookies.MockRequest.get_header
+                # (typed as `str | None`) and auth.HTTPBasicAuth.__call__ (which does
+                # string ops on response headers) then had to coerce bytes back to str
+                # themselves or risk a TypeError on bytes/str mixing. Coerce the value
+                # to native str as well so p.headers.items() always yields (str, str)
+                # pairs, matching the type of the prepared request headers that
+                # urllib3 expects.
+                self.headers[to_native_string(name)] = to_native_string(value)
 
     def prepare_body(
         self, data: _t.DataType, files: _t.FilesType, json: _t.JsonType = None
