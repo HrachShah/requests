@@ -141,14 +141,21 @@ class SessionRedirectMixin:
         # attribute.
         if resp.is_redirect:
             location = resp.headers["location"]
+            # The Location header can arrive as either bytes (e.g. when the
+            # response was constructed manually, or when a mock or test
+            # fixture supplies bytes values) or str (the urllib3 case). Only
+            # the str case needs the latin1 -> utf-8 round-trip described
+            # below; if it's already bytes, decode it in latin1 (the
+            # http.client convention) and return that.
+            if isinstance(location, bytes):
+                return location.decode("latin1")
             # Currently the underlying http module on py3 decode headers
             # in latin1, but empirical evidence suggests that latin1 is very
             # rarely used with non-ASCII characters in HTTP headers.
             # It is more likely to get UTF8 header rather than latin1.
             # This causes incorrect handling of UTF8 encoded location headers.
             # To solve this, we re-encode the location in latin1.
-            location = location.encode("latin1")
-            return to_native_string(location, "utf8")
+            return to_native_string(location.encode("latin1"), "utf8")
         return None
 
     def should_strip_auth(self, old_url: str, new_url: str) -> bool:

@@ -2301,6 +2301,56 @@ class TestRequests:
         assert not r.history[1].is_redirect
         assert r.url == urls_test[2]
 
+    def test_get_redirect_target_bytes_location(self):
+        """get_redirect_target accepts a bytes Location header without crashing.
+
+        Manually-constructed responses (e.g. mocks or test fixtures) can
+        supply the Location header as bytes. The previous code unconditionally
+        called .encode("latin1") on the value, which raised
+        AttributeError: 'bytes' object has no attribute 'encode' for the bytes
+        case and so the redirect was silently dropped (resolve_redirects
+        treated the next iteration as the terminal response).
+        """
+        from requests.sessions import SessionRedirectMixin
+
+        mixin = SessionRedirectMixin()
+        # Build a fake response that mimics a manually-constructed one
+        # with a bytes Location header.
+        resp = requests.Response()
+        resp.url = "http://example.com/orig"
+        resp.status_code = 302
+        resp.headers = CaseInsensitiveDict({"location": b"http://example.com/redir"})
+
+        target = mixin.get_redirect_target(resp)
+        assert target == "http://example.com/redir"
+
+    def test_get_redirect_target_str_ascii_location(self):
+        """get_redirect_target still works for the str ascii case after the bytes fix."""
+        from requests.sessions import SessionRedirectMixin
+
+        mixin = SessionRedirectMixin()
+        resp = requests.Response()
+        resp.url = "http://example.com/orig"
+        resp.status_code = 302
+        resp.headers = CaseInsensitiveDict({"location": "http://example.com/redir"})
+
+        target = mixin.get_redirect_target(resp)
+        assert target == "http://example.com/redir"
+
+    def test_get_redirect_target_bytes_latin1_decoded(self):
+        """Bytes Location header is decoded with latin1 (http.client convention)."""
+        from requests.sessions import SessionRedirectMixin
+
+        mixin = SessionRedirectMixin()
+        # \xe9 is 'é' in latin1
+        resp = requests.Response()
+        resp.url = "http://example.com/orig"
+        resp.status_code = 302
+        resp.headers = CaseInsensitiveDict({"location": b"http://example.com/r\xe9sum\xe9"})
+
+        target = mixin.get_redirect_target(resp)
+        assert target == "http://example.com/résumé"
+
 
 class TestCaseInsensitiveDict:
     @pytest.mark.parametrize(
