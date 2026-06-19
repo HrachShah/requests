@@ -372,6 +372,38 @@ class TestExtractZippedPaths:
         path = r"\\localhost\invalid\location"
         assert extract_zipped_paths(path) == path
 
+    def test_zipped_paths_extracted_closes_zipfile_handle(self, tmpdir):
+        import gc
+        from unittest import mock
+
+        zipped_py = tmpdir.join("test.zip")
+        with zipfile.ZipFile(zipped_py.strpath, "w") as f:
+            f.write(__file__)
+
+        _, name = os.path.splitdrive(__file__)
+        zipped_path = os.path.join(zipped_py.strpath, name.lstrip(r"\/"))
+
+        created = []
+        original_init = zipfile.ZipFile.__init__
+
+        def tracking_init(self, *args, **kwargs):
+            original_init(self, *args, **kwargs)
+            created.append(self)
+
+        with mock.patch.object(zipfile.ZipFile, "__init__", tracking_init):
+            for _ in range(5):
+                extracted = extract_zipped_paths(zipped_path)
+                assert os.path.exists(extracted)
+                os.remove(extracted)
+            gc.collect()
+
+        assert len(created) == 5
+        for i, zf in enumerate(created):
+            assert zf.fp is None, f"ZipFile {i} was not closed (fp={zf.fp!r})"
+
+        if os.path.exists(zipped_py.strpath):
+            os.remove(zipped_py.strpath)
+
 
 class TestContentEncodingDetection:
     def test_none(self):
