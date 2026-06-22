@@ -691,6 +691,25 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        (
+            '<http://example.com/page2;id=42>; rel="next"',
+            [{"url": "http://example.com/page2;id=42", "rel": "next"}],
+        ),
+        (
+            '<http://example.com/a;b>; rel=next',
+            [{"url": "http://example.com/a;b", "rel": "next"}],
+        ),
+        (
+            '<http://api.example.com/v1/items;limit=10>; rel="first",<http://api.example.com/v1/items>; rel="last"',
+            [
+                {"url": "http://api.example.com/v1/items;limit=10", "rel": "first"},
+                {"url": "http://api.example.com/v1/items", "rel": "last"},
+            ],
+        ),
+        (
+            '<http://example.com/path?ref=abc;version=2>; rel=next',
+            [{"url": "http://example.com/path?ref=abc;version=2", "rel": "next"}],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):
