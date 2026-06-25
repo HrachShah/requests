@@ -979,6 +979,14 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
         return links
 
     for val in re.split(", *<", value):
+        # Strip a trailing comma from each segment so that a separator
+        # left at the end of one link does not leak into the next link's
+        # first parameter value (e.g. ``<a>; rel=front,`` would otherwise
+        # yield ``rel='front,'``).
+        val = val.rstrip(",")
+        # Skip empty segments caused by leading or trailing commas.
+        if not val.strip():
+            continue
         try:
             url, params = val.split(";", 1)
         except ValueError:

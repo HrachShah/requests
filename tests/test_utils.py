@@ -691,6 +691,26 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        # Trailing commas: split by ``, *<`` keeps the trailing comma attached
+        # to the last segment's params, so the value loses its stray ``,``
+        # after the fix.
+        ("<http:/.../front.jpeg>; rel=front,", [{"url": "http:/.../front.jpeg", "rel": "front"}]),
+        ("<http:/.../front.jpeg>; rel=front, ", [{"url": "http:/.../front.jpeg", "rel": "front"}]),
+        # Leading commas produce an empty first segment after the split.
+        (",<http:/.../front.jpeg>; rel=front", [{"url": "http:/.../front.jpeg", "rel": "front"}]),
+        (", <http:/.../front.jpeg>; rel=front", [{"url": "http:/.../front.jpeg", "rel": "front"}]),
+        # Multiple links followed by a stray comma should still parse all the
+        # real entries.
+        (
+            '<http:/.../front.jpeg>; rel=front,<http://.../back.jpeg>; rel=back,',
+            [
+                {"url": "http:/.../front.jpeg", "rel": "front"},
+                {"url": "http://.../back.jpeg", "rel": "back"},
+            ],
+        ),
+        # A header that contains only commas/whitespace after stripping is empty.
+        (",", []),
+        (", ", []),
     ),
 )
 def test_parse_header_links(value, expected):
