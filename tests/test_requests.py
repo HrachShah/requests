@@ -3092,3 +3092,33 @@ def test_json_decode_errors_are_serializable_deserializable():
     )
     deserialized_error = pickle.loads(pickle.dumps(json_decode_error))
     assert repr(json_decode_error) == repr(deserialized_error)
+
+
+def test_mock_response_getheaders_returns_headers():
+    """MockResponse.getheaders(name) must return the underlying header list, not None.
+
+    The method delegates to self._headers.getheaders(name) but was missing its
+    return statement, so callers received None. This breaks any code path that
+    asks the MockResponse for a header list (notably the .getheaders() duck-type
+    that the stdlib http.cookiejar machinery can be adapted to use).
+    """
+    from requests.cookies import MockResponse
+
+    headers = mock.Mock()
+    headers.getheaders.return_value = ["application/json", "text/html"]
+    response = MockResponse(headers)
+
+    assert response.getheaders("Content-Type") == ["application/json", "text/html"]
+    headers.getheaders.assert_called_with("Content-Type")
+
+
+def test_mock_response_getheaders_returns_none_when_underlying_does():
+    """When the underlying headers object returns None from getheaders(),
+    MockResponse.getheaders() should also return None (not a falsy sentinel)."""
+    from requests.cookies import MockResponse
+
+    headers = mock.Mock()
+    headers.getheaders.return_value = None
+    response = MockResponse(headers)
+
+    assert response.getheaders("Content-Type") is None
