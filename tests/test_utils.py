@@ -691,6 +691,12 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        # Param values may contain '='; only the first '=' splits the key/value.
+        ('<http://example.com>; rel=next; token=abc=def', [{"url": "http://example.com", "rel": "next", "token": "abc=def"}]),
+        # Mixed well-formed and malformed params in the same header.
+        ('<http://example.com>; rel=next; broken; foo=bar', [{"url": "http://example.com", "rel": "next", "foo": "bar"}]),
+        # Param key is the part before the FIRST '=', even if more follow.
+        ('<http://example.com>; a=1=2=3', [{"url": "http://example.com", "a": "1=2=3"}]),
     ),
 )
 def test_parse_header_links(value, expected):

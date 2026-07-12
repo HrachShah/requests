@@ -988,9 +988,15 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
 
         for param in params.split(";"):
             try:
-                key, value = param.split("=")
+                key, value = param.split("=", 1)
             except ValueError:
-                break
+                # A param without '=' is malformed; skip it but keep parsing
+                # the rest of the link (a previous version broke out of the
+                # loop here, which silently dropped every subsequent param
+                # including ``rel``).
+                continue
+            key = key.strip()
+            value = value.strip()
 
             link[key.strip(replace_chars)] = value.strip(replace_chars)
 
