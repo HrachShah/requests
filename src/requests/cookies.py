@@ -12,7 +12,7 @@ from __future__ import annotations
 import calendar
 import copy
 import time
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from http.cookiejar import Cookie, CookieJar, CookiePolicy
 from typing import TYPE_CHECKING, Any, TypeVar, overload
 
@@ -593,10 +593,22 @@ def cookiejar_from_dict(
         cookiejar = RequestsCookieJar()
 
     if cookie_dict is not None:
+        if not isinstance(cookie_dict, Mapping):
+            raise TypeError(
+                f"cookiejar_from_dict() expected a mapping of str->str or None "
+                f"for cookie_dict, got {type(cookie_dict).__name__}."
+            )
         names_from_jar = [cookie.name for cookie in cookiejar]
         for name in cookie_dict:
+            value = cookie_dict[name]
+            if not isinstance(value, str):
+                raise ValueError(
+                    f"cookiejar_from_dict() expected string values, got "
+                    f"{type(value).__name__} for key {name!r}. Cast values to "
+                    f"str before constructing the jar."
+                )
             if overwrite or (name not in names_from_jar):
-                cookiejar.set_cookie(create_cookie(name, cookie_dict[name]))
+                cookiejar.set_cookie(create_cookie(name, value))
 
     return cookiejar
 

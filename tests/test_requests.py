@@ -3116,3 +3116,48 @@ def test_json_decode_errors_are_serializable_deserializable():
     )
     deserialized_error = pickle.loads(pickle.dumps(json_decode_error))
     assert repr(json_decode_error) == repr(deserialized_error)
+
+
+class TestCookieJarFromDictTypeGuards:
+    """Defensive type-guard tests for cookiejar_from_dict.
+
+    Before the fix, passing a non-mapping (e.g. ``list``) surfaced as
+    ``TypeError: list indices must be integers or slices, not tuple``
+    from inside the ``for name in cookie_dict`` walk, and a non-string
+    value surfaced as ``AttributeError: 'int' object has no attribute
+    'startswith'`` from inside ``create_cookie``'s rfc2109 path. The
+    new guards raise a typed error at the function's call site.
+    """
+
+    @pytest.mark.parametrize(
+        "bad",
+        [[("a", "b")], "string", 123, ("tup",), b"bytes"],
+    )
+    def test_non_mapping_raises_typeerror(self, bad):
+        # None is a valid special case: cookiejar_from_dict(None) returns an
+        # empty jar. We cover that separately in test_none_dict_still_works.
+        with pytest.raises(TypeError, match="expected a mapping"):
+            cookiejar_from_dict(bad)
+
+    @pytest.mark.parametrize("bad_value", [123, None, 4.5, ["x"], object()])
+    def test_non_string_value_raises_valueerror(self, bad_value):
+        with pytest.raises(ValueError, match="'k'"):
+            cookiejar_from_dict({"k": bad_value})
+
+    def test_string_value_with_none_in_other_key_raises(self):
+        with pytest.raises(ValueError, match="'bad'"):
+            cookiejar_from_dict({"good": "ok", "bad": None})
+
+    def test_valid_dict_still_works(self):
+        jar = cookiejar_from_dict({"a": "1", "b": "2"})
+        assert len(jar) == 2
+        assert jar.get("a") == "1"
+        assert jar.get("b") == "2"
+
+    def test_none_dict_still_works(self):
+        jar = cookiejar_from_dict(None)
+        assert len(jar) == 0
+
+    def test_empty_dict_still_works(self):
+        jar = cookiejar_from_dict({})
+        assert len(jar) == 0
