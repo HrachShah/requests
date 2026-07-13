@@ -129,7 +129,13 @@ class MockResponse:
         return self._headers
 
     def getheaders(self, name: str) -> Any:
-        self._headers.getheaders(name)
+        # ``http.cookiejar`` historically calls ``info().getheaders(name)``; the
+        # standard-library contract is to return a list of string values (empty
+        # when the header is absent).  ``email.message.Message.get_all`` is the
+        # stdlib equivalent that respects the same case-insensitive lookup and
+        # returns ``None`` for unknown headers, so we coerce that to ``[]`` to
+        # match the list-of-strings shape cookiejar expects.
+        return self._headers.get_all(name, [])
 
 
 def extract_cookies_to_jar(
