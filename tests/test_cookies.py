@@ -52,6 +52,19 @@ class TestMockResponse:
 
         assert response.getheaders("X-Missing") == []
 
+    def test_getheaders_supports_plain_mapping(self) -> None:
+        response = MockResponse({"Set-Cookie": "a=1", "X-Other": "x"})
+
+        assert response.getheaders("set-cookie") == ["a=1"]
+        assert response.getheaders("X-Missing") == []
+
+    def test_getheaders_supports_legacy_provider(self) -> None:
+        class LegacyHeaders:
+            def getheaders(self, name: str) -> list[str]:
+                return ["a=1"] if name.lower() == "set-cookie" else []
+
+        assert MockResponse(LegacyHeaders()).getheaders("Set-Cookie") == ["a=1"]
+
 
 class TestMockRequest:
     """Smoke tests for ``MockRequest`` so the small adapter stays consistent."""
