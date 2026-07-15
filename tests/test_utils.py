@@ -867,6 +867,10 @@ def test_should_bypass_proxies_no_proxy_domain_boundary(url, expected):
     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected
 
 
+def test_should_bypass_proxies_wildcard():
+    assert should_bypass_proxies("http://example.com/", no_proxy="*") is True
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Test only on Windows")
 @pytest.mark.parametrize(
     "url, expected, override",
