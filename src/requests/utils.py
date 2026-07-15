@@ -824,6 +824,8 @@ def should_bypass_proxies(url: str, no_proxy: str | None) -> bool:
     no_proxy_arg = no_proxy
     if no_proxy is None:
         no_proxy = get_proxy("no_proxy")
+    if no_proxy and no_proxy.strip() == "*":
+        return True
     parsed = urlparse(url)
     hostname = parsed.hostname
 

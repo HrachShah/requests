@@ -793,6 +793,15 @@ def test_should_bypass_proxies_pass_only_hostname(url, expected):
         proxy_bypass.assert_called_once_with(expected)
 
 
+def test_should_bypass_proxies_wildcard_no_proxy(monkeypatch):
+    monkeypatch.setenv("http_proxy", "http://proxy.example")
+    monkeypatch.setenv("https_proxy", "http://proxy.example")
+    monkeypatch.delenv("no_proxy", raising=False)
+    monkeypatch.delenv("NO_PROXY", raising=False)
+
+    assert should_bypass_proxies("https://example.com/", "*") is True
+
+
 @pytest.mark.parametrize(
     "cookiejar",
     (
