@@ -1131,7 +1131,7 @@ def urldefragauth(url: str) -> str:
     if not netloc:
         netloc, path = path, netloc
 
-    netloc = netloc.rsplit("@", 1)[-1]
+    netloc = netloc.rstrip("@").rsplit("@", 1)[-1]
 
     return urlunparse((scheme, netloc, path, params, query, ""))
 

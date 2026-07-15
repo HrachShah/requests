@@ -735,6 +735,8 @@ def test_to_native_string(value, expected):
         ("//example.com/path", "//example.com/path"),
         ("example.com/path", "//example.com/path"),
         ("scheme:u:p@example.com/path", "scheme://example.com/path"),
+        ("http://example.com@/path#test", "http://example.com/path"),
+        ("http://u:p@example.com@/path#test", "http://example.com/path"),
     ),
 )
 def test_urldefragauth(url, expected):
