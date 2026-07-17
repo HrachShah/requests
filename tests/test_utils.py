@@ -148,6 +148,23 @@ class TestSuperLen:
             file_data = f.read()
         assert length == len(file_data)
 
+    @pytest.mark.parametrize("error", [ValueError])
+    def test_super_len_handles_closed_files(self, error):
+        class ClosedFile:
+            mode = "rb"
+
+            def fileno(self):
+                raise error()
+
+        assert super_len(ClosedFile()) == 0
+
+    def test_super_len_handles_unusable_fileno(self):
+        class ClosedFile:
+            def fileno(self):
+                return -1
+
+        assert super_len(ClosedFile()) == 0
+
     def test_super_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
