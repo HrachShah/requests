@@ -12,7 +12,7 @@ from __future__ import annotations
 import calendar
 import copy
 import time
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from http.cookiejar import Cookie, CookieJar, CookiePolicy
 from typing import TYPE_CHECKING, Any, TypeVar, overload
 
@@ -129,7 +129,27 @@ class MockResponse:
         return self._headers
 
     def getheaders(self, name: str) -> Any:
-        self._headers.getheaders(name)
+        if get_all := getattr(self._headers, "get_all", None):
+            values = get_all(name)
+        elif getheaders := getattr(self._headers, "getheaders", None):
+            values = getheaders(name)
+        elif isinstance(self._headers, Mapping):
+            values = next(
+                (
+                    value
+                    for key, value in self._headers.items()
+                    if key.casefold() == name.casefold()
+                ),
+                [],
+            )
+        else:
+            values = []
+
+        if values is None:
+            return []
+        if isinstance(values, (list, tuple)):
+            return list(values)
+        return [values]
 
 
 def extract_cookies_to_jar(

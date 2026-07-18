@@ -310,17 +310,16 @@ def extract_zipped_paths(path: str) -> str:
     if not zipfile.is_zipfile(archive):
         return path
 
-    zip_file = zipfile.ZipFile(archive)
-    if member not in zip_file.namelist():
-        return path
+    with zipfile.ZipFile(archive) as zip_file:
+        if member not in zip_file.namelist():
+            return path
 
-    # we have a valid zip archive and a valid member of that archive
-    suffix = os.path.splitext(member.split("/")[-1])[-1]
-    fd, extracted_path = tempfile.mkstemp(suffix=suffix)
-    try:
-        os.write(fd, zip_file.read(member))
-    finally:
-        os.close(fd)
+        suffix = os.path.splitext(member.split("/")[-1])[-1]
+        fd, extracted_path = tempfile.mkstemp(suffix=suffix)
+        try:
+            os.write(fd, zip_file.read(member))
+        finally:
+            os.close(fd)
 
     return extracted_path
 
@@ -834,7 +833,10 @@ def should_bypass_proxies(url: str, no_proxy: str | None) -> bool:
     if no_proxy:
         # We need to check whether we match here. We need to see if we match
         # the end of the hostname, both with and without the port.
-        no_proxy_hosts = (host for host in no_proxy.replace(" ", "").split(",") if host)
+        no_proxy_hosts = tuple(host.strip() for host in no_proxy.split(",") if host.strip())
+
+        if "*" in no_proxy_hosts:
+            return True
 
         if is_ipv4_address(hostname):
             for proxy_ip in no_proxy_hosts:
