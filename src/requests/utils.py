@@ -834,7 +834,7 @@ def should_bypass_proxies(url: str, no_proxy: str | None) -> bool:
     if no_proxy:
         # We need to check whether we match here. We need to see if we match
         # the end of the hostname, both with and without the port.
-        no_proxy_hosts = tuple(host for host in no_proxy.replace(" ", "").split(",") if host)
+        no_proxy_hosts = tuple(host.strip() for host in no_proxy.split(",") if host.strip())
 
         if "*" in no_proxy_hosts:
             return True

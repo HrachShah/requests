@@ -867,6 +867,14 @@ def test_should_bypass_proxies_no_proxy_domain_boundary(url, expected):
     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected
 
 
+def test_should_bypass_proxies_ignores_empty_tokens():
+    assert should_bypass_proxies("http://example.com/", no_proxy=", ,") is False
+
+
+def test_should_bypass_proxies_strips_entry_whitespace():
+    assert should_bypass_proxies("http://example.com/", no_proxy="\texample.com\t") is True
+
+
 def test_should_bypass_proxies_wildcard():
     assert should_bypass_proxies("http://example.com/", no_proxy="*") is True
 
