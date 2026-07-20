@@ -989,11 +989,9 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
         link: dict[str, str] = {"url": url.strip("<> '\"")}
 
         for param in params.split(";"):
-            try:
-                key, value = param.split("=")
-            except ValueError:
-                break
-
+            if "=" not in param:
+                continue
+            key, value = param.split("=", 1)
             link[key.strip(replace_chars)] = value.strip(replace_chars)
 
         links.append(link)
