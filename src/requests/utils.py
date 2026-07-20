@@ -994,7 +994,10 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
             except ValueError:
                 continue
 
-            link[key.strip(replace_chars)] = param_value.strip(replace_chars)
+            key = key.strip(replace_chars)
+            if not key:
+                continue
+            link[key] = param_value.strip(replace_chars)
 
         links.append(link)
 
