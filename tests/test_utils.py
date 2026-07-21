@@ -715,6 +715,17 @@ def test_parse_header_links_skips_malformed_params_and_keeps_later_values():
     assert result == [{"url": "/page1", "rel": "next", "title": "hi=there"}]
 
 
+def test_parse_header_links_does_not_split_commas_in_quoted_values():
+    result = parse_header_links(
+        '</page1>; title="part one, part two"; rel=next, </page2>; rel=last'
+    )
+
+    assert result == [
+        {"url": "/page1", "title": "part one, part two", "rel": "next"},
+        {"url": "/page2", "rel": "last"},
+    ]
+
+
 @pytest.mark.parametrize(
     "value, expected",
     (

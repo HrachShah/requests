@@ -983,6 +983,25 @@ def _split_header_params(value: str) -> list[str]:
     return params
 
 
+def _split_header_links(value: str) -> list[str]:
+    links: list[str] = []
+    start = 0
+    quoted = False
+    escaped = False
+    for index, char in enumerate(value):
+        if escaped:
+            escaped = False
+        elif quoted and char == "\\":
+            escaped = True
+        elif char == '"':
+            quoted = not quoted
+        elif char == "," and not quoted and value[index + 1 :].lstrip().startswith("<"):
+            links.append(value[start:index])
+            start = index + 1
+    links.append(value[start:])
+    return links
+
+
 def parse_header_links(value: str) -> list[dict[str, str]]:
     """Return a list of parsed link headers proxies.
 
@@ -999,7 +1018,7 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
     if not value:
         return links
 
-    for val in re.split(", *<", value):
+    for val in _split_header_links(value):
         try:
             url, params = val.split(";", 1)
         except ValueError:
