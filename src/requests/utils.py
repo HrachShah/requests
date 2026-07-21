@@ -964,6 +964,25 @@ def default_headers() -> CaseInsensitiveDict[str]:
     )
 
 
+def _split_header_params(value: str) -> list[str]:
+    params: list[str] = []
+    start = 0
+    quoted = False
+    escaped = False
+    for index, char in enumerate(value):
+        if escaped:
+            escaped = False
+        elif quoted and char == "\\":
+            escaped = True
+        elif char == '"':
+            quoted = not quoted
+        elif char == ";" and not quoted:
+            params.append(value[start:index])
+            start = index + 1
+    params.append(value[start:])
+    return params
+
+
 def parse_header_links(value: str) -> list[dict[str, str]]:
     """Return a list of parsed link headers proxies.
 
@@ -988,7 +1007,7 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
 
         link: dict[str, str] = {"url": url.strip("<> '\"")}
 
-        for param in params.split(";"):
+        for param in _split_header_params(params):
             if "=" not in param:
                 continue
             key, value = param.split("=", 1)

@@ -703,6 +703,12 @@ def test_parse_header_links_skips_empty_parameter_names():
     ]
 
 
+def test_parse_header_links_preserves_semicolons_in_quoted_values():
+    result = parse_header_links('</page1>; title="part one; part two"; rel=next')
+
+    assert result == [{"url": "/page1", "title": "part one; part two", "rel": "next"}]
+
+
 def test_parse_header_links_skips_malformed_params_and_keeps_later_values():
     result = parse_header_links('</page1>; rel="next"; flag; title=hi=there')
 
