@@ -697,6 +697,12 @@ def test_parse_header_links(value, expected):
     assert parse_header_links(value) == expected
 
 
+def test_parse_header_links_skips_empty_parameter_names():
+    assert parse_header_links('</page1>; =ignored; rel="next"') == [
+        {"url": "/page1", "rel": "next"}
+    ]
+
+
 def test_parse_header_links_skips_malformed_params_and_keeps_later_values():
     result = parse_header_links('</page1>; rel="next"; flag; title=hi=there')
 
