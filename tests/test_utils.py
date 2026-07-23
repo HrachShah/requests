@@ -708,6 +708,10 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        (
+            '<https://example.com>; rel=alternate; title=part=one',
+            [{"url": "https://example.com", "rel": "alternate", "title": "part=one"}],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):
