@@ -711,6 +711,9 @@ def test_iter_slices(value, length):
         (
             '<https://example.com>; rel=alternate; title=part=one',
             [{"url": "https://example.com", "rel": "alternate", "title": "part=one"}],
+        ),        (
+            '<https://example.com>; rel=alternate; malformed; title=part=one',
+            [{"url": "https://example.com", "rel": "alternate", "title": "part=one"}],
         ),
     ),
 )
