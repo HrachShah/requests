@@ -696,6 +696,15 @@ def test_iter_slices(value, length):
             [{"url": "https://example.com", "rel": "next", "title": "part=one"}],
         ),
         (
+            '<https://example.com>; rel=next; title="part;one"; type="text/html"',
+            [{
+                "url": "https://example.com",
+                "rel": "next",
+                "title": "part;one",
+                "type": "text/html",
+            }],
+        ),
+        (
             "<https://example.com>; rel=next; malformed; title=last",
             [{"url": "https://example.com", "rel": "next", "title": "last"}],
         ),
