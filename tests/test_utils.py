@@ -1,6 +1,7 @@
 import copy
 import filecmp
 import os
+from pathlib import Path
 import tarfile
 import zipfile
 from collections import deque
@@ -45,6 +46,27 @@ from requests.utils import (
 )
 
 from .compat import StringIO, cStringIO
+
+
+def test_extract_zipped_paths_closes_archive(monkeypatch, tmp_path):
+    archive = tmp_path / "certs.zip"
+    member = "cert.pem"
+    with zipfile.ZipFile(archive, "w") as zip_file:
+        zip_file.writestr(member, "certificate")
+
+    original_zipfile = zipfile.ZipFile
+    opened = []
+
+    class TrackingZipFile(original_zipfile):
+        def __enter__(self):
+            opened.append(self)
+            return super().__enter__()
+
+    monkeypatch.setattr(zipfile, "ZipFile", TrackingZipFile)
+    extracted = extract_zipped_paths(str(archive / member))
+
+    assert Path(extracted).read_text() == "certificate"
+    assert opened and opened[0].fp is None
 
 
 class TestSuperLen:
