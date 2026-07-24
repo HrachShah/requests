@@ -630,6 +630,7 @@ def test_parse_dict_header(value, expected):
             ),
         ),
         ("application/json ; ; ", ("application/json", {})),
+        ('text/plain; title="part one; part two"', ("text/plain", {"title": "part one; part two"})),
     ),
 )
 def test__parse_content_type_header(value, expected):

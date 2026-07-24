@@ -552,7 +552,7 @@ def _parse_content_type_header(header: str) -> tuple[str, dict[str, Any]]:
     """
 
     tokens = header.split(";")
-    content_type, params = tokens[0].strip(), tokens[1:]
+    content_type, params = tokens[0].strip(), _split_header_params(header)
     params_dict: dict[str, str | bool] = {}
     strip_chars = "\"' "
 
