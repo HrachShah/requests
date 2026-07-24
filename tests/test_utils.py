@@ -844,6 +844,10 @@ def test_should_bypass_proxies_no_proxy(url, expected, monkeypatch):
     assert should_bypass_proxies(url, no_proxy=no_proxy) == expected
 
 
+def test_should_bypass_proxies_wildcard() -> None:
+    assert should_bypass_proxies("http://example.com/", no_proxy="*")
+
+
 @pytest.mark.parametrize(
     "url, expected",
     (
