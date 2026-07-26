@@ -715,6 +715,13 @@ def test_iter_slices(value, length):
             '<https://example.com>; rel=alternate; malformed; title=part=one',
             [{"url": "https://example.com", "rel": "alternate", "title": "part=one"}],
         ),
+        (
+            '<https://example.com>; rel=first, <https://example.org>; rel=second',
+            [
+                {"url": "https://example.com", "rel": "first"},
+                {"url": "https://example.org", "rel": "second"},
+            ],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):
