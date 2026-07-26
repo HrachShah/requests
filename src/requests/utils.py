@@ -183,9 +183,10 @@ def super_len(o: Any) -> int:
         else:
             total_length = os.fstat(fileno).st_size
 
-            # Having used fstat to determine the file length, we need to
-            # confirm that this file was opened up in binary mode.
-            if "b" not in o.mode:
+            # Having used fstat to determine the file length, confirm that
+            # this file was opened up in binary mode when the stream exposes
+            # its mode.
+            if getattr(o, "mode", "b").find("b") == -1:
                 warnings.warn(
                     (
                         "Requests has determined the content-length for this "

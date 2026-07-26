@@ -112,6 +112,23 @@ class TestSuperLen:
             assert super_len(fd) == 4
         assert len(recwarn) == warnings_num
 
+    def test_fileno_stream_without_mode(self, tmpdir):
+        file_obj = tmpdir.join("test.txt")
+        file_obj.write("Test")
+
+        class ModeLessStream:
+            def __init__(self, stream):
+                self.stream = stream
+
+            def fileno(self):
+                return self.stream.fileno()
+
+            def tell(self):
+                return self.stream.tell()
+
+        with file_obj.open("rb") as fd:
+            assert super_len(ModeLessStream(fd)) == 4
+
     def test_tarfile_member(self, tmpdir):
         file_obj = tmpdir.join("test.txt")
         file_obj.write("Test")
