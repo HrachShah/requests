@@ -1034,7 +1034,12 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
             key = key.strip(replace_chars)
             if not key:
                 continue
-            link[key] = value.strip(replace_chars)
+            value = value.strip(" '")
+            if value[:1] == value[-1:] == '"':
+                value = unquote_header_value(value)
+            else:
+                value = value.strip('"')
+            link[key] = value
 
         links.append(link)
 

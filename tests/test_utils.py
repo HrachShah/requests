@@ -744,6 +744,12 @@ def test_parse_header_links_does_not_split_commas_in_quoted_values():
     ]
 
 
+def test_parse_header_links_handles_escaped_quotes_in_quoted_values():
+    assert parse_header_links('</page1>; title="say \\"next\\""; rel=next') == [
+        {"url": "/page1", "title": 'say "next"', "rel": "next"}
+    ]
+
+
 @pytest.mark.parametrize(
     "value, expected",
     (
