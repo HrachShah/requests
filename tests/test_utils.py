@@ -684,6 +684,17 @@ def test_iter_slices(value, length):
         ("<http:/.../front.jpeg>", [{"url": "http:/.../front.jpeg"}]),
         ("<http:/.../front.jpeg>;", [{"url": "http:/.../front.jpeg"}]),
         (
+            '<https://example.com>; rel=first; malformed; title=part=one',
+            [{"url": "https://example.com", "rel": "first", "title": "part=one"}],
+        ),
+        (
+            '<https://example.com>; rel=first, <>; rel=empty, <https://example.org>; rel=second',
+            [
+                {"url": "https://example.com", "rel": "first"},
+                {"url": "https://example.org", "rel": "second"},
+            ],
+        ),
+        (
             '<http:/.../front.jpeg>; type="image/jpeg",<http://.../back.jpeg>;',
             [
                 {"url": "http:/.../front.jpeg", "type": "image/jpeg"},

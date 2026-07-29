@@ -984,15 +984,20 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
         except ValueError:
             url, params = val, ""
 
-        link: dict[str, str] = {"url": url.strip("<> '\"")}
+        url = url.strip("<> '\"")
+        if not url:
+            continue
+        link: dict[str, str] = {"url": url}
 
         for param in params.split(";"):
             try:
-                key, value = param.split("=")
+                key, value = param.split("=", 1)
             except ValueError:
-                break
+                continue
 
-            link[key.strip(replace_chars)] = value.strip(replace_chars)
+            key = key.strip(replace_chars)
+            if key:
+                link[key] = value.strip(replace_chars)
 
         links.append(link)
 
