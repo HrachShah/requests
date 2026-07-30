@@ -181,7 +181,10 @@ def super_len(o: Any) -> int:
             # `Tarfile.extractfile()`, per issue 5229.
             pass
         else:
-            total_length = os.fstat(fileno).st_size
+            try:
+                total_length = os.fstat(fileno).st_size
+            except OSError:
+                pass
 
             # Having used fstat to determine the file length, we need to
             # confirm that this file was opened up in binary mode.

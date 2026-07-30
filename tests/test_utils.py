@@ -148,6 +148,15 @@ class TestSuperLen:
             file_data = f.read()
         assert length == len(file_data)
 
+    def test_super_len_ignores_unusable_fileno(self):
+        class UnusableFile:
+            mode = "rb"
+
+            def fileno(self):
+                return -1
+
+        assert super_len(UnusableFile()) == 0
+
     def test_super_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
