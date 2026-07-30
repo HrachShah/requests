@@ -175,29 +175,32 @@ def super_len(o: Any) -> int:
     elif hasattr(o, "fileno"):
         try:
             fileno = o.fileno()
-        except (io.UnsupportedOperation, AttributeError):
+        except (io.UnsupportedOperation, AttributeError, ValueError):
             # AttributeError is a surprising exception, seeing as how we've just checked
             # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
             # `Tarfile.extractfile()`, per issue 5229.
             pass
         else:
-            total_length = os.fstat(fileno).st_size
-
-            # Having used fstat to determine the file length, confirm that
-            # this file was opened up in binary mode when the stream exposes
-            # its mode.
-            if getattr(o, "mode", "b").find("b") == -1:
-                warnings.warn(
-                    (
-                        "Requests has determined the content-length for this "
-                        "request using the binary size of the file: however, the "
-                        "file has been opened in text mode (i.e. without the 'b' "
-                        "flag in the mode). This may lead to an incorrect "
-                        "content-length. In Requests 3.0, support will be removed "
-                        "for files in text mode."
-                    ),
-                    FileModeWarning,
-                )
+            try:
+                total_length = os.fstat(fileno).st_size
+            except OSError:
+                pass
+            else:
+                # Having used fstat to determine the file length, confirm that
+                # this file was opened up in binary mode when the stream exposes
+                # its mode.
+                if getattr(o, "mode", "b").find("b") == -1:
+                    warnings.warn(
+                        (
+                            "Requests has determined the content-length for this "
+                            "request using the binary size of the file: however, the "
+                            "file has been opened in text mode (i.e. without the 'b' "
+                            "flag in the mode). This may lead to an incorrect "
+                            "content-length. In Requests 3.0, support will be removed "
+                            "for files in text mode."
+                        ),
+                        FileModeWarning,
+                    )
 
     if hasattr(o, "tell"):
         try:

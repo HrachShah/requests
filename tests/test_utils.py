@@ -129,6 +129,15 @@ class TestSuperLen:
         with file_obj.open("rb") as fd:
             assert super_len(ModeLessStream(fd)) == 4
 
+    def test_super_len_handles_closed_file_descriptors(self):
+        class ClosedFile:
+            mode = "rb"
+
+            def fileno(self):
+                return -1
+
+        assert super_len(ClosedFile()) == 0
+
     def test_tarfile_member(self, tmpdir):
         file_obj = tmpdir.join("test.txt")
         file_obj.write("Test")
