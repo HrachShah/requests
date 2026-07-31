@@ -148,6 +148,14 @@ class TestSuperLen:
             file_data = f.read()
         assert length == len(file_data)
 
+    def test_super_len_with_closed_file(self, tmp_path):
+        file_path = tmp_path / "closed.txt"
+        file_path.write_text("content")
+        file_obj = file_path.open("rb")
+        file_obj.close()
+
+        assert super_len(file_obj) == 0
+
     def test_super_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
