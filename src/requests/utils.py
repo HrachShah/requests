@@ -775,7 +775,7 @@ def is_valid_cidr(string_network: str) -> bool:
         except ValueError:
             return False
 
-        if mask < 1 or mask > 32:
+        if mask < 0 or mask > 32:
             return False
 
         try:

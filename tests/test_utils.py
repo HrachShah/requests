@@ -320,6 +320,7 @@ class TestIsIPv4Address:
 class TestIsValidCIDR:
     def test_valid(self):
         assert is_valid_cidr("192.168.1.0/24")
+        assert is_valid_cidr("0.0.0.0/0")
 
     @pytest.mark.parametrize(
         "value",
