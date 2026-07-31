@@ -690,6 +690,13 @@ def test_iter_slices(value, length):
                 {"url": "http://.../back.jpeg"},
             ],
         ),
+        (
+            "<https://example.com/next>; rel=next,\t<https://example.com/last>; rel=last",
+            [
+                {"url": "https://example.com/next", "rel": "next"},
+                {"url": "https://example.com/last", "rel": "last"},
+            ],
+        ),
         ("", []),
     ),
 )
