@@ -156,6 +156,19 @@ class TestSuperLen:
 
         assert super_len(file_obj) == 0
 
+    def test_super_len_handles_fstat_errors(self):
+        class FstatErrorFile:
+            mode = "rb"
+
+            def fileno(self):
+                return 1
+
+            def tell(self):
+                return 0
+
+        with mock.patch("requests.utils.os.fstat", side_effect=OSError):
+            assert super_len(FstatErrorFile()) == 0
+
     def test_super_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
