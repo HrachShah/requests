@@ -713,7 +713,7 @@ def test_iter_slices(value, length):
         ),
         ("", []),
         (
-            '<https://example.com>; rel="alternate"; title="a=b", <https://example.com/feed>; rel=feed',
+            '<https://example.com>; rel="alternate"; title="a=b",\t<https://example.com/feed>; rel=feed',
             [
                 {"url": "https://example.com", "rel": "alternate", "title": "a=b"},
                 {"url": "https://example.com/feed", "rel": "feed"},
