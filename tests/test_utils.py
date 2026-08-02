@@ -702,6 +702,13 @@ def test_iter_slices(value, length):
                 {"url": "http://.../back.jpeg"},
             ],
         ),
+        (
+            '<http://example.com>; rel=next,\t<http://example.com/2>; rel=last',
+            [
+                {"url": "http://example.com", "rel": "next"},
+                {"url": "http://example.com/2", "rel": "last"},
+            ],
+        ),
         ("", []),
     ),
 )
