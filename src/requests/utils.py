@@ -313,17 +313,17 @@ def extract_zipped_paths(path: str) -> str:
     if not zipfile.is_zipfile(archive):
         return path
 
-    zip_file = zipfile.ZipFile(archive)
-    if member not in zip_file.namelist():
-        return path
+    with zipfile.ZipFile(archive) as zip_file:
+        if member not in zip_file.namelist():
+            return path
 
-    # we have a valid zip archive and a valid member of that archive
-    suffix = os.path.splitext(member.split("/")[-1])[-1]
-    fd, extracted_path = tempfile.mkstemp(suffix=suffix)
-    try:
-        os.write(fd, zip_file.read(member))
-    finally:
-        os.close(fd)
+        # we have a valid zip archive and a valid member of that archive
+        suffix = os.path.splitext(member.split("/")[-1])[-1]
+        fd, extracted_path = tempfile.mkstemp(suffix=suffix)
+        try:
+            os.write(fd, zip_file.read(member))
+        finally:
+            os.close(fd)
 
     return extracted_path
 
