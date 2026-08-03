@@ -977,7 +977,7 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
 
     replace_chars = " '\""
 
-    value = value.strip(replace_chars)
+    value = value.strip(replace_chars).replace("\\t", "\t").replace("\\r", "\r").replace("\\n", "\n")
     if not value:
         return links
 
