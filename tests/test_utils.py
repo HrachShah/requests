@@ -148,6 +148,27 @@ class TestSuperLen:
             file_data = f.read()
         assert length == len(file_data)
 
+    def test_super_len_with_closed_file(self, tmp_path):
+        file_path = tmp_path / "closed.txt"
+        file_path.write_text("content")
+        file_obj = file_path.open("rb")
+        file_obj.close()
+
+        assert super_len(file_obj) == 0
+
+    def test_super_len_handles_fstat_errors(self):
+        class FstatErrorFile:
+            mode = "rb"
+
+            def fileno(self):
+                return 1
+
+            def tell(self):
+                return 0
+
+        with mock.patch("requests.utils.os.fstat", side_effect=OSError):
+            assert super_len(FstatErrorFile()) == 0
+
     def test_super_len_with_no_matches(self):
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
@@ -691,6 +712,17 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        (
+            '<https://example.com>; rel="alternate"; title="a=b",\t<https://example.com/feed>; rel=feed',
+            [
+                {"url": "https://example.com", "rel": "alternate", "title": "a=b"},
+                {"url": "https://example.com/feed", "rel": "feed"},
+            ],
+        ),
+        (
+            '<https://example.com>; rel=first; malformed; title=part=one',
+            [{"url": "https://example.com", "rel": "first", "title": "part=one"}],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):

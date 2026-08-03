@@ -175,33 +175,36 @@ def super_len(o: Any) -> int:
     elif hasattr(o, "fileno"):
         try:
             fileno = o.fileno()
-        except (io.UnsupportedOperation, AttributeError):
+        except (io.UnsupportedOperation, AttributeError, OSError, ValueError):
             # AttributeError is a surprising exception, seeing as how we've just checked
             # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
             # `Tarfile.extractfile()`, per issue 5229.
             pass
         else:
-            total_length = os.fstat(fileno).st_size
-
-            # Having used fstat to determine the file length, we need to
-            # confirm that this file was opened up in binary mode.
-            if "b" not in o.mode:
-                warnings.warn(
-                    (
-                        "Requests has determined the content-length for this "
-                        "request using the binary size of the file: however, the "
-                        "file has been opened in text mode (i.e. without the 'b' "
-                        "flag in the mode). This may lead to an incorrect "
-                        "content-length. In Requests 3.0, support will be removed "
-                        "for files in text mode."
-                    ),
-                    FileModeWarning,
-                )
+            try:
+                total_length = os.fstat(fileno).st_size
+            except OSError:
+                pass
+            else:
+                # Having used fstat to determine the file length, we need to
+                # confirm that this file was opened up in binary mode.
+                if "b" not in o.mode:
+                    warnings.warn(
+                        (
+                            "Requests has determined the content-length for this "
+                            "request using the binary size of the file: however, the "
+                            "file has been opened in text mode (i.e. without the 'b' "
+                            "flag in the mode). This may lead to an incorrect "
+                            "content-length. In Requests 3.0, support will be removed "
+                            "for files in text mode."
+                        ),
+                        FileModeWarning,
+                    )
 
     if hasattr(o, "tell"):
         try:
             current_position = o.tell()
-        except OSError:
+        except (OSError, ValueError):
             # This can happen in some weird situations, such as when the file
             # is actually a special file descriptor like stdin. In this
             # instance, we don't know what the length is, so set it to zero and
@@ -310,17 +313,17 @@ def extract_zipped_paths(path: str) -> str:
     if not zipfile.is_zipfile(archive):
         return path
 
-    zip_file = zipfile.ZipFile(archive)
-    if member not in zip_file.namelist():
-        return path
+    with zipfile.ZipFile(archive) as zip_file:
+        if member not in zip_file.namelist():
+            return path
 
-    # we have a valid zip archive and a valid member of that archive
-    suffix = os.path.splitext(member.split("/")[-1])[-1]
-    fd, extracted_path = tempfile.mkstemp(suffix=suffix)
-    try:
-        os.write(fd, zip_file.read(member))
-    finally:
-        os.close(fd)
+        # we have a valid zip archive and a valid member of that archive
+        suffix = os.path.splitext(member.split("/")[-1])[-1]
+        fd, extracted_path = tempfile.mkstemp(suffix=suffix)
+        try:
+            os.write(fd, zip_file.read(member))
+        finally:
+            os.close(fd)
 
     return extracted_path
 
@@ -974,23 +977,24 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
 
     replace_chars = " '\""
 
-    value = value.strip(replace_chars)
+    value = value.strip(replace_chars).replace("\\t", "\t").replace("\\r", "\r").replace("\\n", "\n")
     if not value:
         return links
 
-    for val in re.split(", *<", value):
+    for val in re.split(r",(?:\s|\\[trn])*<", value):
         try:
             url, params = val.split(";", 1)
         except ValueError:
             url, params = val, ""
 
-        link: dict[str, str] = {"url": url.strip("<> '\"")}
+        link: dict[str, str] = {"url": url.strip("<> '\"\t\r\n\\")}
 
         for param in params.split(";"):
+            param = param.strip()
             try:
-                key, value = param.split("=")
+                key, value = param.split("=", 1)
             except ValueError:
-                break
+                continue
 
             link[key.strip(replace_chars)] = value.strip(replace_chars)
 
