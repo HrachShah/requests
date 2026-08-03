@@ -719,6 +719,10 @@ def test_iter_slices(value, length):
                 {"url": "https://example.com/feed", "rel": "feed"},
             ],
         ),
+        (
+            '<https://example.com>; rel=first; malformed; title=part=one',
+            [{"url": "https://example.com", "rel": "first", "title": "part=one"}],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):
