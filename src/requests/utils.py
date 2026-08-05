@@ -779,7 +779,7 @@ def is_valid_cidr(string_network: str) -> bool:
             return False
 
         try:
-            socket.inet_aton(string_network.split("/")[0])
+            socket.inet_pton(socket.AF_INET, string_network.split("/")[0])
         except OSError:
             return False
     else:

@@ -330,6 +330,7 @@ class TestIsValidCIDR:
             "192.168.1.0/128",
             "192.168.1.0/-1",
             "192.168.1.999/24",
+            "127.1/8",
         ),
     )
     def test_invalid(self, value):
