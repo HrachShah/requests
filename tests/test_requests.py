@@ -2182,6 +2182,12 @@ class TestRequests:
         next(it)
         assert len(list(it)) == 3
 
+    def test_response_iter_lines_preserves_two_unterminated_lines(self):
+        r = requests.Response()
+        r.raw = io.BytesIO(b"first\nsecond")
+
+        assert list(r.iter_lines(chunk_size=6)) == [b"first", b"second"]
+
     def test_response_context_manager(self, httpbin):
         with requests.get(httpbin("stream/4"), stream=True) as response:
             assert isinstance(response, requests.Response)
