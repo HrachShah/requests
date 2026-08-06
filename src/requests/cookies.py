@@ -534,7 +534,7 @@ def morsel_to_cookie(morsel: Morsel[Any]) -> Cookie:
     expires: int | None = None
     if morsel["max-age"]:
         try:
-            expires = int(time.time() + int(morsel["max-age"]))
+            expires = int(time.time()) + int(morsel["max-age"])
         except ValueError:
             raise TypeError(f"max-age: {morsel['max-age']} must be integer")
     elif morsel["expires"]:

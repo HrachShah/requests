@@ -2524,6 +2524,16 @@ class TestMorselToCookieMaxAge:
         cookie = morsel_to_cookie(morsel)
         assert isinstance(cookie.expires, int)
 
+    def test_max_age_preserves_integer_precision(self, monkeypatch):
+        """Large max-age values should not pass through float arithmetic."""
+        monkeypatch.setattr("requests.cookies.time.time", lambda: 1_700_000_000.9)
+        morsel = Morsel()
+        morsel["max-age"] = "9007199254740993"
+
+        cookie = morsel_to_cookie(morsel)
+
+        assert cookie.expires == 9_007_200_954_740_992
+
     def test_max_age_invalid_str(self):
         """Test case where a invalid max age is passed."""
 
