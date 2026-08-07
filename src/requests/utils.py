@@ -972,32 +972,57 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
 
     links: list[dict[str, str]] = []
 
-    replace_chars = " '\""
+    replace_chars = " \t'\""
 
-    value = value.strip(replace_chars)
+    value = value.strip(" \t")
     if not value:
         return links
 
-    for val in re.split(", *<", value):
+    values: list[str] = []
+    start = 0
+    quoted = False
+    angle_depth = 0
+    for index, char in enumerate(value):
+        if char == '"':
+            quoted = not quoted
+        elif not quoted and char == "<":
+            angle_depth += 1
+        elif not quoted and char == ">" and angle_depth:
+            angle_depth -= 1
+        elif not quoted and char == "," and angle_depth == 0:
+            remainder = value[index + 1 :].lstrip(" \t")
+            if remainder.startswith("<"):
+                values.append(value[start:index])
+                start = index + 1
+    values.append(value[start:])
+
+    for val in values:
         try:
             url, params = val.split(";", 1)
         except ValueError:
             url, params = val, ""
 
-        link: dict[str, str] = {"url": url.strip("<> '\"")}
+        link: dict[str, str] = {"url": url.strip("<> \t'\"")}
+        param_start = 0
+        quoted = False
+        for index, char in enumerate(params + ";"):
+            if char == '"':
+                quoted = not quoted
+            elif char == ";" and not quoted:
+                param = params[param_start:min(index, len(params))]
+                param_start = index + 1
+                try:
+                    key, param_value = param.split("=", 1)
+                except ValueError:
+                    continue
 
-        for param in params.split(";"):
-            try:
-                key, value = param.split("=", 1)
-            except ValueError:
-                break
-
-            link[key.strip(replace_chars)] = value.strip(replace_chars)
+                key = key.strip(replace_chars)
+                if key:
+                    link[key] = param_value.strip(replace_chars)
 
         links.append(link)
 
     return links
-
 
 # Null bytes; no need to recreate these on each call to guess_json_utf
 _null = "\x00".encode("ascii")  # encoding to ASCII for Python 3
