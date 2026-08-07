@@ -757,7 +757,7 @@ def is_ipv4_address(string_ip: str) -> bool:
     :rtype: bool
     """
     try:
-        socket.inet_aton(string_ip)
+        socket.inet_pton(socket.AF_INET, string_ip)
     except OSError:
         return False
     return True
