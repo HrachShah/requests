@@ -134,11 +134,13 @@ class MockResponse:
         elif getheaders := getattr(self._headers, "getheaders", None):
             values = getheaders(name)
         elif isinstance(self._headers, Mapping):
+            requested_name = name.casefold()
             values = next(
                 (
                     value
                     for key, value in self._headers.items()
-                    if key.casefold() == name.casefold()
+                    if (key.decode("latin-1") if isinstance(key, bytes) else str(key)).casefold()
+                    == requested_name
                 ),
                 [],
             )

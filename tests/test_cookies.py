@@ -58,6 +58,11 @@ class TestMockResponse:
         assert response.getheaders("set-cookie") == ["a=1"]
         assert response.getheaders("X-Missing") == []
 
+    def test_getheaders_supports_bytes_mapping_keys(self) -> None:
+        response = MockResponse({b"Set-Cookie": "a=1"})
+
+        assert response.getheaders("set-cookie") == ["a=1"]
+
     def test_getheaders_supports_legacy_provider(self) -> None:
         class LegacyHeaders:
             def getheaders(self, name: str) -> list[str]:
