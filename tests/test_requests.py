@@ -1524,6 +1524,11 @@ class TestRequests:
         with pytest.raises(TypeError):
             chunks = r.iter_content("1024")
 
+        r = requests.Response()
+        r.raw = io.BytesIO(b"the content")
+        with pytest.raises(TypeError):
+            r.iter_content(True)
+
     @pytest.mark.parametrize(
         "exception, args, expected",
         (

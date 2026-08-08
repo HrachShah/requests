@@ -957,8 +957,8 @@ class Response:
 
         if self._content_consumed and isinstance(self._content, bool):
             raise StreamConsumedError()
-        elif chunk_size is not None and not isinstance(
-            chunk_size, int
+        elif chunk_size is not None and (
+            isinstance(chunk_size, bool) or not isinstance(chunk_size, int)
         ):  # runtime guard for untyped callers
             raise TypeError(
                 f"chunk_size must be an int, it is instead a {type(chunk_size)}."
