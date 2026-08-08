@@ -17,6 +17,7 @@ from requests.utils import (
     _parse_content_type_header,
     add_dict_to_cookiejar,
     address_in_network,
+    atomic_open,
     dotted_netmask,
     extract_zipped_paths,
     get_auth_from_url,
@@ -367,6 +368,17 @@ class TestGuessFilename:
         result = guess_filename(obj)
         assert result == value
         assert isinstance(result, expected_type)
+
+
+class TestAtomicOpen:
+    def test_relative_filename_uses_current_directory(self, tmpdir, monkeypatch):
+        monkeypatch.chdir(tmpdir)
+
+        with atomic_open("result.txt") as handle:
+            handle.write(b"written atomically")
+
+        assert tmpdir.join("result.txt").read_binary() == b"written atomically"
+
 
 
 class TestExtractZippedPaths:

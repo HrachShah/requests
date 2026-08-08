@@ -331,7 +331,7 @@ def extract_zipped_paths(path: str) -> str:
 @contextlib.contextmanager
 def atomic_open(filename: str) -> Generator[BufferedWriter, None, None]:
     """Write a file to the disk in an atomic fashion"""
-    tmp_descriptor, tmp_name = tempfile.mkstemp(dir=os.path.dirname(filename))
+    tmp_descriptor, tmp_name = tempfile.mkstemp(dir=os.path.dirname(filename) or None)
     try:
         with os.fdopen(tmp_descriptor, "wb") as tmp_handler:
             yield tmp_handler
