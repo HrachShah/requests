@@ -978,7 +978,22 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
     if not value:
         return links
 
-    for val in re.split(", *<", value):
+    parts = []
+    start = 0
+    in_quotes = False
+    escaped = False
+    for index, character in enumerate(value):
+        if character == '"' and not escaped:
+            in_quotes = not in_quotes
+        if character == ',' and not in_quotes and value[index + 1 :].lstrip().startswith("<"):
+            parts.append(value[start:index])
+            start = index + 1
+        escaped = character == "\\" and not escaped
+        if character != "\\":
+            escaped = False
+    parts.append(value[start:])
+
+    for val in parts:
         try:
             url, params = val.split(";", 1)
         except ValueError:

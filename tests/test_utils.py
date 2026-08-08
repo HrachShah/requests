@@ -691,6 +691,13 @@ def test_iter_slices(value, length):
             ],
         ),
         ("", []),
+        (
+            '<https://example.com>; title="a,b", <https://example.org>; rel=next',
+            [
+                {"url": "https://example.com", "title": "a,b"},
+                {"url": "https://example.org", "rel": "next"},
+            ],
+        ),
     ),
 )
 def test_parse_header_links(value, expected):
