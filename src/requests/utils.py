@@ -991,16 +991,31 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
             angle_depth -= 1
         elif not quoted and char == "," and angle_depth == 0:
             remainder = value[index + 1 :].lstrip(" \t")
-            if remainder.startswith("<"):
+            if remainder.startswith("<") or remainder.startswith("\\t<"):
+                remainder = remainder[1:] if remainder.startswith("\\t") else remainder
                 values.append(value[start:index])
                 start = index + 1
     values.append(value[start:])
 
     for val in values:
-        try:
-            url, params = val.split(";", 1)
-        except ValueError:
+        separator = None
+        quoted = False
+        angle_depth = 0
+        for index, char in enumerate(val):
+            if char == '"':
+                quoted = not quoted
+            elif not quoted and char == "<":
+                angle_depth += 1
+            elif not quoted and char == ">" and angle_depth:
+                angle_depth -= 1
+            elif not quoted and angle_depth == 0 and char == ";":
+                separator = index
+                break
+
+        if separator is None:
             url, params = val, ""
+        else:
+            url, params = val[:separator], val[separator + 1 :]
 
         link: dict[str, str] = {"url": url.strip("<> \t'\"")}
         param_start = 0
