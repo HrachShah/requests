@@ -618,6 +618,13 @@ def test_parse_dict_header(value, expected):
     assert parse_dict_header(value) == expected
 
 
+def test_parse_dict_header_strips_whitespace_around_names_and_values():
+    assert parse_dict_header("foo = bar, baz = qux") == {
+        "foo": "bar",
+        "baz": "qux",
+    }
+
+
 @pytest.mark.parametrize(
     "value, expected",
     (
