@@ -2543,6 +2543,12 @@ class TestMorselToCookieMaxAge:
         with pytest.raises(TypeError):
             morsel_to_cookie(morsel)
 
+    def test_max_age_overflow(self):
+        morsel = Morsel()
+        morsel["max-age"] = "9" * 1000
+        with pytest.raises(TypeError):
+            morsel_to_cookie(morsel)
+
 
 class TestTimeout:
     def test_stream_timeout(self, httpbin):

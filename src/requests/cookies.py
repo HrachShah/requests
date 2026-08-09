@@ -557,8 +557,8 @@ def morsel_to_cookie(morsel: Morsel[Any]) -> Cookie:
     if morsel["max-age"]:
         try:
             expires = int(time.time() + int(morsel["max-age"]))
-        except ValueError:
-            raise TypeError(f"max-age: {morsel['max-age']} must be integer")
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(f"max-age: {morsel['max-age']} must be integer") from exc
     elif morsel["expires"]:
         time_template = "%a, %d-%b-%Y %H:%M:%S GMT"
         expires = calendar.timegm(time.strptime(morsel["expires"], time_template))
