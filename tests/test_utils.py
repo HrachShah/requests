@@ -152,6 +152,14 @@ class TestSuperLen:
         """Ensure that objects without any length methods default to 0"""
         assert super_len(object()) == 0
 
+    def test_super_len_closed_file(self, tmp_path):
+        file_obj = tmp_path / "closed.txt"
+        file_obj.write_text("Test")
+        stream = file_obj.open("rb")
+        stream.close()
+
+        assert super_len(stream) == 0
+
 
 class TestGetNetrcAuth:
     def test_works(self, tmp_path, monkeypatch):

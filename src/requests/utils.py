@@ -175,7 +175,7 @@ def super_len(o: Any) -> int:
     elif hasattr(o, "fileno"):
         try:
             fileno = o.fileno()
-        except (io.UnsupportedOperation, AttributeError):
+        except (io.UnsupportedOperation, AttributeError, ValueError):
             # AttributeError is a surprising exception, seeing as how we've just checked
             # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
             # `Tarfile.extractfile()`, per issue 5229.
@@ -201,7 +201,7 @@ def super_len(o: Any) -> int:
     if hasattr(o, "tell"):
         try:
             current_position = o.tell()
-        except OSError:
+        except (OSError, ValueError):
             # This can happen in some weird situations, such as when the file
             # is actually a special file descriptor like stdin. In this
             # instance, we don't know what the length is, so set it to zero and
@@ -219,7 +219,7 @@ def super_len(o: Any) -> int:
                     # seek back to current position to support
                     # partially read file-like objects
                     o.seek(current_position or 0)
-                except OSError:
+                except (OSError, ValueError):
                     total_length = 0
 
     if total_length is None:
