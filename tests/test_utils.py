@@ -704,6 +704,14 @@ def test_parse_header_links(value, expected):
     assert parse_header_links(value) == expected
 
 
+def test_parse_header_links_preserves_equals_in_parameter_values():
+    value = '<https://example.com>; title="a=b=c"'
+
+    assert parse_header_links(value) == [
+        {"url": "https://example.com", "title": "a=b=c"},
+    ]
+
+
 @pytest.mark.parametrize(
     "value, expected",
     (
