@@ -998,6 +998,10 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
     values.append(value[start:])
 
     for val in values:
+        val = val.rstrip(" \t,")
+        if not val:
+            continue
+
         separator = None
         quoted = False
         angle_depth = 0

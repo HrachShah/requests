@@ -683,6 +683,9 @@ def test_iter_slices(value, length):
         ),
         ("<http:/.../front.jpeg>", [{"url": "http:/.../front.jpeg"}]),
         ("<http:/.../front.jpeg>;", [{"url": "http:/.../front.jpeg"}]),
+        ("<http://example.com>; rel=next,", [{"url": "http://example.com", "rel": "next"}]),
+        ("<http://example.com>; rel=next, ", [{"url": "http://example.com", "rel": "next"}]),
+        (",<http://example.com>; rel=next", [{"url": "http://example.com", "rel": "next"}]),
         (
             "<http://example.com/a;b>; rel=next",
             [{"url": "http://example.com/a;b", "rel": "next"}],
