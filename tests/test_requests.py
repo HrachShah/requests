@@ -29,7 +29,7 @@ from requests.compat import (
     is_urllib3_1,
     urlparse,
 )
-from requests.cookies import cookiejar_from_dict, morsel_to_cookie
+from requests.cookies import MockResponse, cookiejar_from_dict, morsel_to_cookie
 from requests.exceptions import (
     ChunkedEncodingError,
     ConnectionError,
@@ -402,6 +402,15 @@ class TestRequests:
             params={"Set-Cookie": "foo=deleted; expires=Thu, 01-Jan-1970 00:00:01 GMT"},
         )
         assert "foo" not in s.cookies
+
+    def test_mock_response_returns_header_values(self):
+        headers = mock.Mock()
+        headers.getheaders.return_value = ["first", "second"]
+
+        response = MockResponse(headers)
+
+        assert response.getheaders("Set-Cookie") == ["first", "second"]
+        headers.getheaders.assert_called_once_with("Set-Cookie")
 
     def test_cookie_quote_wrapped(self, httpbin):
         s = requests.session()
