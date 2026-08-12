@@ -139,6 +139,12 @@ class TestSuperLen:
 
         assert super_len(ClosedFile()) == 0
 
+    def test_super_len_handles_closed_io_streams(self):
+        stream = BytesIO(b"Test")
+        stream.close()
+
+        assert super_len(stream) == 0
+
     def test_tarfile_member(self, tmpdir):
         file_obj = tmpdir.join("test.txt")
         file_obj.write("Test")
