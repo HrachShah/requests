@@ -347,6 +347,12 @@ class TestAddressInNetwork:
     def test_invalid(self):
         assert not address_in_network("172.16.0.1", "192.168.1.0/24")
 
+    def test_rejects_shorthand_ipv4_addresses(self):
+        with pytest.raises(OSError):
+            address_in_network("127.1", "127.0.0.0/8")
+        with pytest.raises(OSError):
+            address_in_network("127.0.0.1", "127.1/8")
+
 
 class TestGuessFilename:
     @pytest.mark.parametrize(

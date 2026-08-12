@@ -736,10 +736,10 @@ def address_in_network(ip: str, net: str) -> bool:
 
     :rtype: bool
     """
-    ipaddr = struct.unpack("=L", socket.inet_aton(ip))[0]
+    ipaddr = struct.unpack("=L", socket.inet_pton(socket.AF_INET, ip))[0]
     netaddr, bits = net.split("/")
     netmask = struct.unpack("=L", socket.inet_aton(dotted_netmask(int(bits))))[0]
-    network = struct.unpack("=L", socket.inet_aton(netaddr))[0] & netmask
+    network = struct.unpack("=L", socket.inet_pton(socket.AF_INET, netaddr))[0] & netmask
     return (ipaddr & netmask) == (network & netmask)
 
 
